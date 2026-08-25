@@ -8,6 +8,7 @@ import 'package:daypulse/features/progress/presentation/widgets/annual_heatmap_c
 import 'package:daypulse/features/progress/presentation/widgets/completed_tasks_donut_card.dart';
 import 'package:daypulse/features/progress/presentation/widgets/daily_completed_card.dart';
 import 'package:daypulse/features/progress/presentation/widgets/focus_metrics_card.dart';
+import 'package:daypulse/features/tasks/models/task_model.dart';
 import 'package:daypulse/features/tasks/presentation/widgets/task_card.dart';
 import 'package:daypulse/features/tasks/providers/tasks_provider.dart';
 
@@ -21,16 +22,32 @@ class ProgressScreen extends ConsumerWidget {
 
     final progressData = ref.watch(progressAnalyticsProvider);
     final allTasks = ref.watch(tasksNotifierProvider).value ?? [];
+    final tasksNotifier = ref.watch(tasksNotifierProvider.notifier);
+    final occurrences = tasksNotifier.occurrences;
 
-    final completedTasks = allTasks.where((t) => t.completed && t.isTopLevel).toList();
-    final pendingTasks = allTasks.where((t) => !t.completed && t.isTopLevel).toList();
+    // 1. Completed top-level tasks (Regular completed + Completed recurring occurrences)
+    final regularCompleted = allTasks.where((t) => t.completed && t.isTopLevel && !t.isRecurring).length;
+    final recurringTopLevelIds = allTasks.where((t) => t.isTopLevel && t.isRecurring).map((t) => t.id).toSet();
+    final recurringCompletedOccurrences = occurrences
+        .where((occ) => occ.completed && !occ.isSkipped && recurringTopLevelIds.contains(occ.taskId))
+        .length;
+    final totalCompletedCount = regularCompleted + recurringCompletedOccurrences;
 
-    // Next 7 days tasks
+    // 2. Pending top-level tasks (Regular pending + Today's pending recurring tasks)
+    final regularPending = allTasks.where((t) => !t.completed && t.isTopLevel && !t.isRecurring).length;
     final now = DateTime.now();
-    final next7DaysTasks = allTasks.where((t) {
-      final diff = t.scheduledDate.difference(AppDateUtils.normalizeDate(now)).inDays;
-      return diff >= 0 && diff <= 7 && !t.completed && t.isTopLevel;
-    }).toList();
+    final today = AppDateUtils.normalizeDate(now);
+    final todayTasks = tasksNotifier.getTasksForDate(today);
+    final todayPendingRecurring = todayTasks.where((t) => t.isTopLevel && t.isRecurring && !t.completed).length;
+    final totalPendingCount = regularPending + todayPendingRecurring;
+
+    // 3. Next 7 days tasks
+    final List<TaskModel> next7DaysTasks = [];
+    for (int i = 0; i <= 7; i++) {
+      final targetDate = today.add(Duration(days: i));
+      final dayTasks = tasksNotifier.getTasksForDate(targetDate);
+      next7DaysTasks.addAll(dayTasks.where((t) => t.isTopLevel && !t.completed));
+    }
 
     final streak = progressData?.streakData.currentStreak ?? 1;
 
@@ -173,7 +190,7 @@ class ProgressScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${completedTasks.length}',
+                          '$totalCompletedCount',
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
@@ -209,7 +226,7 @@ class ProgressScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${pendingTasks.length}',
+                          '$totalPendingCount',
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
