@@ -1,0 +1,16 @@
+{
+  "short_name": "DayPulse",
+  "name": "DayPulse — Daily Planner & Habit Tracker",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0B0F19",
+  "theme_color": "#4F75FF",
+  "display": "standalone",
+  "orientation": "portrait"
+}
