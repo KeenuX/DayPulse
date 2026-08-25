@@ -52,8 +52,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       className={`group relative rounded-2xl bg-surface-light dark:bg-surface-dark border transition-all duration-200 shadow-sm hover:shadow-md ${
         task.completed
           ? 'border-slate-100 dark:border-surface-dark-border/40 opacity-70'
-          : isOverdue
-          ? 'border-rose-300/80 dark:border-rose-900/60'
           : 'border-slate-200/80 dark:border-surface-dark-border hover:border-brand-300 dark:hover:border-brand-500/40'
       }`}
     >
@@ -147,14 +145,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   <div className="flex items-center gap-1 text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded-md font-medium capitalize">
                     <Repeat className="w-3 h-3" />
                     <span>{task.repeatRule}</span>
-                  </div>
-                )}
-
-                {/* Overdue alert */}
-                {isOverdue && (
-                  <div className="flex items-center gap-1 text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md font-bold">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>Overdue</span>
                   </div>
                 )}
 

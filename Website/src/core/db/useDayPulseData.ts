@@ -13,11 +13,12 @@ export function useDayPulseData() {
   const categories = useLiveQuery(() => db.categories.toArray(), []) || [];
   const occurrences = useLiveQuery(() => db.task_occurrences.toArray(), []) || [];
   const preferences = useLiveQuery(() => db.preferences.get('user_preferences'), []) || {
-    themeMode: 'dark',
+    themeMode: 'dark' as const,
     soundEnabled: true,
     notificationsEnabled: false,
     streakThreshold: 70,
     hasCompletedOnboarding: true,
+    userName: 'DayPulse User',
   };
 
   // Helper map for categories

@@ -151,7 +151,13 @@ export function AppContent() {
             />
           )}
 
-          {currentTab === 'progress' && <ProgressPage />}
+          {currentTab === 'progress' && (
+            <ProgressPage
+              onSelectTask={handleSelectTask}
+              onEditTask={handleEditTask}
+              onRescheduleTask={handleRescheduleTask}
+            />
+          )}
 
           {currentTab === 'planner' && (
             <TomorrowPlannerPage

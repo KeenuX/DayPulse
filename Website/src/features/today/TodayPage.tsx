@@ -2,7 +2,6 @@ import React from 'react';
 import { useDayPulseData } from '../../core/db/useDayPulseData';
 import { AppDateUtils } from '../../core/utilities/dateUtils';
 import { TodayHeaderCard } from './TodayHeaderCard';
-import { OverdueBanner } from './OverdueBanner';
 import { QuickAddBar } from './QuickAddBar';
 import { TimeSlotSection } from './TimeSlotSection';
 import { Task } from '../../types/task';
@@ -80,9 +79,6 @@ export const TodayPage: React.FC<TodayPageProps> = ({
     <div className="max-w-4xl mx-auto space-y-6 pb-24 md:pb-12 animate-fade-in">
       {/* Header Banner */}
       <TodayHeaderCard onOpenDailySummary={onOpenDailySummary} />
-
-      {/* Overdue Tasks Alert */}
-      <OverdueBanner />
 
       {/* Quick Add NLP Bar */}
       <QuickAddBar onOpenFullModal={onOpenCreateTask} />
