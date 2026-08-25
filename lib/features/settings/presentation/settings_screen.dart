@@ -122,20 +122,45 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.notifications_paused_outlined),
-                  title: const Text('Test Notification'),
-                  subtitle: const Text('Send an instant test alert to this device'),
+                  leading: const Icon(Icons.notifications_active_rounded, color: Color(0xFF10B981)),
+                  title: const Text('Test Instant Notification'),
+                  subtitle: const Text('Send an instant test alert to this device right now'),
                   onTap: () async {
                     final notif = ref.read(notificationServiceProvider);
                     await notif.requestPermissions();
                     await notif.showInstantNotification(
-                          title: 'DayPulse Notification Test 🔔',
-                          body: 'Notifications & alarms are working perfectly!',
+                          title: 'DayPulse Alert 🔔',
+                          body: 'Instant notification is working perfectly!',
                         );
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Test notification sent! Check your notification tray.'),
+                          content: Text('Instant test notification sent! Check your status bar.'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.timer_outlined, color: Color(0xFF6495ED)),
+                  title: const Text('Test 5-Second Scheduled Alarm'),
+                  subtitle: const Text('Schedules a reminder for 5 seconds from now'),
+                  onTap: () async {
+                    final notif = ref.read(notificationServiceProvider);
+                    await notif.requestPermissions();
+                    final testTime = DateTime.now().add(const Duration(seconds: 5));
+                    await notif.scheduleTaskReminder(
+                      taskId: 'test_alarm_${DateTime.now().millisecondsSinceEpoch}',
+                      title: 'Scheduled Reminder Fired! ⏰',
+                      body: 'Your 5-second scheduled alarm worked with exact precision!',
+                      scheduledDateTime: testTime,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Scheduled for 5 seconds from now. Watch your status bar!'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );

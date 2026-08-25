@@ -13,32 +13,47 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
 
-  static const String channelId = 'task_reminders_channel_v3';
-  static const String channelName = 'Task & Schedule Reminders';
-  static const String channelDesc = 'High priority alerts for scheduled tasks and upcoming events';
+  static const String channelId = 'daypulse_reminders_channel_v4';
+  static const String channelName = 'Task & Schedule Alarms';
+  static const String channelDesc = 'High-priority sound and vibration alerts for scheduled tasks';
 
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // 1. Initialize timezones with fallback
+    // 1. Initialize timezones with multi-tier fallback
     try {
       tz.initializeTimeZones();
       if (!kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) {
         try {
           final String currentTimeZone = await FlutterTimezone.getLocalTimezone();
+          debugPrint('Detected system timezone string: $currentTimeZone');
           tz.setLocalLocation(tz.getLocation(currentTimeZone));
         } catch (tzError) {
-          debugPrint('Local timezone detection fallback to UTC: $tzError');
-          tz.setLocalLocation(tz.UTC);
+          debugPrint('Timezone lookup for string failed ($tzError). Resolving by offset...');
+          final offsetMinutes = DateTime.now().timeZoneOffset.inMinutes;
+          if (offsetMinutes == 330) {
+            tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+          } else {
+            // Match any location or fallback to UTC
+            try {
+              final loc = tz.timeZoneDatabase.locations.values.firstWhere(
+                (l) => l.currentTimeZone.offset == offsetMinutes * 60 * 1000,
+                orElse: () => tz.getLocation('UTC'),
+              );
+              tz.setLocalLocation(loc);
+            } catch (_) {
+              tz.setLocalLocation(tz.UTC);
+            }
+          }
         }
       }
     } catch (e) {
       debugPrint('Timezone initialization error: $e');
     }
 
-    // 2. Platform settings
+    // 2. Android and iOS settings with valid PNG drawable icon
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_notification');
 
     const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -55,11 +70,11 @@ class NotificationService {
       await _notificationsPlugin.initialize(
         initSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) {
-          debugPrint('Notification tapped with payload: ${response.payload}');
+          debugPrint('Notification clicked with payload: ${response.payload}');
         },
       );
 
-      // 3. Android High-Priority Notification Channel
+      // 3. Android High-Priority Alarm Channel
       if (!kIsWeb && Platform.isAndroid) {
         final androidPlugin = _notificationsPlugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
@@ -72,6 +87,7 @@ class NotificationService {
           playSound: true,
           enableVibration: true,
           showBadge: true,
+          enableLights: true,
         );
 
         await androidPlugin?.createNotificationChannel(channel);
@@ -79,7 +95,7 @@ class NotificationService {
       }
 
       _isInitialized = true;
-      debugPrint('NotificationService initialized successfully');
+      debugPrint('NotificationService initialized successfully with channel $channelId');
     } catch (e) {
       debugPrint('Notification plugin init error: $e');
     }
@@ -92,7 +108,7 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>();
         final notifGranted = await androidPlugin?.requestNotificationsPermission() ?? false;
         final exactGranted = await androidPlugin?.requestExactAlarmsPermission() ?? false;
-        debugPrint('Notification permission: $notifGranted, Exact alarm: $exactGranted');
+        debugPrint('Notification permission granted: $notifGranted, Exact alarm: $exactGranted');
         return notifGranted || exactGranted;
       } else if (!kIsWeb && Platform.isIOS) {
         final iosPlugin = _notificationsPlugin.resolvePlatformSpecificImplementation<
@@ -133,13 +149,14 @@ class NotificationService {
       channelName,
       channelDescription: channelDesc,
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
       playSound: true,
       enableVibration: true,
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
       category: AndroidNotificationCategory.reminder,
       visibility: NotificationVisibility.public,
       ticker: 'Task Reminder',
+      fullScreenIntent: false,
     );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -153,39 +170,66 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    final tz.TZDateTime tzScheduled = tz.TZDateTime.from(scheduledDateTime, tz.local);
+    // Explicit wall-clock scheduled time in local location
+    final tz.TZDateTime tzScheduled = tz.TZDateTime(
+      tz.local,
+      scheduledDateTime.year,
+      scheduledDateTime.month,
+      scheduledDateTime.day,
+      scheduledDateTime.hour,
+      scheduledDateTime.minute,
+      scheduledDateTime.second,
+    );
 
     try {
-      // First attempt exact schedule (works with SCHEDULE_EXACT_ALARM)
+      // 1. Try alarmClock mode for highest priority wakeup on Android
       await _notificationsPlugin.zonedSchedule(
         notificationId,
         title,
         body,
         tzScheduled,
         notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.alarmClock,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         payload: taskId,
       );
-      debugPrint('Successfully scheduled exact notification $notificationId for $scheduledDateTime');
+      debugPrint('Scheduled alarmClock notification $notificationId for $tzScheduled');
     } catch (e) {
-      debugPrint('Exact schedule failed ($e), falling back to inexact schedule');
+      debugPrint('alarmClock mode failed ($e), trying exactAllowWhileIdle...');
       try {
+        // 2. Try exactAllowWhileIdle mode
         await _notificationsPlugin.zonedSchedule(
           notificationId,
           title,
           body,
           tzScheduled,
           notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
           payload: taskId,
         );
-        debugPrint('Successfully scheduled inexact notification $notificationId for $scheduledDateTime');
-      } catch (fallbackError) {
-        debugPrint('Failed to schedule notification completely: $fallbackError');
+        debugPrint('Scheduled exactAllowWhileIdle notification $notificationId for $tzScheduled');
+      } catch (e2) {
+        debugPrint('exactAllowWhileIdle failed ($e2), falling back to inexactAllowWhileIdle...');
+        try {
+          // 3. Fallback to inexactAllowWhileIdle
+          await _notificationsPlugin.zonedSchedule(
+            notificationId,
+            title,
+            body,
+            tzScheduled,
+            notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            payload: taskId,
+          );
+          debugPrint('Scheduled inexact notification $notificationId for $tzScheduled');
+        } catch (finalErr) {
+          debugPrint('Fatal failure to schedule notification: $finalErr');
+        }
       }
     }
   }
@@ -218,10 +262,11 @@ class NotificationService {
       channelName,
       channelDescription: channelDesc,
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
       playSound: true,
       enableVibration: true,
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
+      visibility: NotificationVisibility.public,
     );
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
@@ -235,6 +280,7 @@ class NotificationService {
         body,
         notificationDetails,
       );
+      debugPrint('Instant notification displayed successfully');
     } catch (e) {
       debugPrint('Failed to show instant notification: $e');
     }
