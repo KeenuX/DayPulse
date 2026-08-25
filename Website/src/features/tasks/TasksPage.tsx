@@ -21,7 +21,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({
   onOpenCreateTask,
   initialCategoryFilter,
 }) => {
-  const { tasks } = useDayPulseData();
+  const { tasks, occurrences, getTasksForDate } = useDayPulseData();
 
   const [status, setStatus] = useState<TaskFilterStatus>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategoryFilter || null);
@@ -35,20 +35,60 @@ export const TasksPage: React.FC<TasksPageProps> = ({
     }
   }, [initialCategoryFilter]);
 
-  const todayStr = AppDateUtils.toIsoDate(new Date());
+  const now = new Date();
+  const todayStr = AppDateUtils.toIsoDate(now);
 
-  // 1. Filter out subtasks from top-level list
-  let filtered = tasks.filter(t => !t.parentId);
+  // Today's occurrences lookup
+  const todayOccMap = new Map<string, boolean>();
+  occurrences.forEach(o => {
+    if (o.date === todayStr) todayOccMap.set(o.taskId, o.completed);
+  });
 
-  // 2. Status Filter
+  // 1. Synthesize base list based on status filter
+  let filtered: Task[] = [];
+
   if (status === 'today') {
-    filtered = filtered.filter(t => t.date === todayStr);
-  } else if (status === 'upcoming') {
-    filtered = filtered.filter(t => t.date > todayStr);
+    filtered = getTasksForDate(now);
   } else if (status === 'completed') {
-    filtered = filtered.filter(t => t.completed);
+    // A. Non-recurring completed tasks
+    const regularCompleted = tasks.filter(t => !t.parentId && t.repeatRule === 'none' && t.completed);
+
+    // B. Completed recurring task occurrences
+    const recurringMap = new Map<string, Task>();
+    tasks.filter(t => !t.parentId && t.repeatRule !== 'none').forEach(t => recurringMap.set(t.id, t));
+
+    const recurringCompleted: Task[] = [];
+    occurrences.forEach(occ => {
+      if (occ.completed && !occ.isSkipped) {
+        const parent = recurringMap.get(occ.taskId);
+        if (parent) {
+          recurringCompleted.push({
+            ...parent,
+            date: occ.date,
+            completed: true,
+            completedAt: occ.completedAt,
+          });
+        }
+      }
+    });
+
+    filtered = [...regularCompleted, ...recurringCompleted];
+  } else if (status === 'upcoming') {
+    filtered = tasks.filter(t => !t.parentId && (t.date > todayStr || t.repeatRule !== 'none'));
   } else if (status === 'overdue') {
-    filtered = filtered.filter(t => !t.completed && t.date < todayStr);
+    filtered = tasks.filter(t => !t.parentId && t.repeatRule === 'none' && !t.completed && t.date < todayStr);
+  } else {
+    // 'all' status: All non-subtask tasks, showing today's completion state if recurring
+    filtered = tasks.filter(t => !t.parentId).map(t => {
+      if (t.repeatRule !== 'none') {
+        const isDoneToday = todayOccMap.get(t.id) ?? false;
+        return {
+          ...t,
+          completed: isDoneToday,
+        };
+      }
+      return t;
+    });
   }
 
   // 3. Category Filter

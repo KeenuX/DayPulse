@@ -289,12 +289,53 @@ export function useDayPulseData() {
     }
   };
 
+  // Helper to dynamically synthesize tasks (non-recurring + recurring occurrences) for any date
+  const getTasksForDate = (targetDate: Date | string): Task[] => {
+    const d = typeof targetDate === 'string' ? AppDateUtils.parseIsoDate(targetDate) : targetDate;
+    const dStr = AppDateUtils.toIsoDate(d);
+
+    const nonRec = tasks.filter(t => !t.parentId && t.repeatRule === 'none' && t.date === dStr);
+
+    const occMap = new Map<string, TaskOccurrence>();
+    occurrences.forEach(o => {
+      if (o.date === dStr) occMap.set(o.taskId, o);
+    });
+
+    const rec = tasks
+      .filter(t => !t.parentId && t.repeatRule !== 'none' && AppDateUtils.isOccurringOnDate(t, d))
+      .filter(t => {
+        const occ = occMap.get(t.id);
+        return !(occ && occ.isSkipped);
+      })
+      .map(t => {
+        const occ = occMap.get(t.id);
+        return {
+          ...t,
+          date: dStr,
+          completed: occ ? occ.completed : false,
+          completedAt: occ?.completedAt,
+        };
+      });
+
+    const result = [...nonRec, ...rec];
+    result.sort((a, b) => {
+      const aTime = a.startTime || '99:99';
+      const bTime = b.startTime || '99:99';
+      const timeComp = aTime.localeCompare(bTime);
+      if (timeComp !== 0) return timeComp;
+      const priWeights: Record<string, number> = { high: 3, medium: 2, low: 1 };
+      return (priWeights[b.priority] || 1) - (priWeights[a.priority] || 1);
+    });
+    return result;
+  };
+
   return {
     tasks,
     categories,
     categoryMap,
     occurrences,
     preferences,
+    getTasksForDate,
     addTask,
     updateTask,
     deleteTask,

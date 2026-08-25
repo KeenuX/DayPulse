@@ -5,10 +5,9 @@ import { AppDateUtils } from '../../core/utilities/dateUtils';
 import { ProductivityCalculator } from '../../core/utilities/productivityCalculator';
 
 export const ProductivityScoreCard: React.FC = () => {
-  const { tasks, occurrences } = useDayPulseData();
-  const todayStr = AppDateUtils.toIsoDate(new Date());
-
-  const todayTasks = tasks.filter(t => t.date === todayStr && !t.parentId);
+  const { tasks, occurrences, getTasksForDate } = useDayPulseData();
+  const now = new Date();
+  const todayTasks = getTasksForDate(now);
   const streakData = ProductivityCalculator.calculateStreaks(tasks, occurrences);
   const scoreData = ProductivityCalculator.calculateScore(todayTasks, streakData.currentStreak);
 

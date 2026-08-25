@@ -109,8 +109,20 @@ final progressAnalyticsProvider = Provider<ProgressDashboardData?>((ref) {
   for (final t in tasks) {
     final catId = t.categoryId ?? '__general__';
     catTotalMap[catId] = (catTotalMap[catId] ?? 0) + 1;
-    if (t.completed) {
+    if (!t.isRecurring && t.completed) {
       catCompletedMap[catId] = (catCompletedMap[catId] ?? 0) + 1;
+    }
+  }
+
+  // Include completed recurring task occurrences
+  final taskMap = {for (final t in tasks) t.id: t};
+  for (final occ in occurrences) {
+    if (occ.completed && !occ.isSkipped) {
+      final parent = taskMap[occ.taskId];
+      if (parent != null) {
+        final catId = parent.categoryId ?? '__general__';
+        catCompletedMap[catId] = (catCompletedMap[catId] ?? 0) + 1;
+      }
     }
   }
 

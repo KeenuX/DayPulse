@@ -18,6 +18,7 @@ import { RepeatRule, RecurrenceEndType } from '../../types/recurrence';
 import { AppDateUtils } from '../../core/utilities/dateUtils';
 import { CategoryIcon } from '../categories/CategoryIcon';
 import { addDays } from 'date-fns';
+import { TimePickerField } from './TimePickerField';
 
 interface CreateEditTaskModalProps {
   isOpen: boolean;
@@ -341,47 +342,19 @@ export const CreateEditTaskModal: React.FC<CreateEditTaskModalProps> = ({
             </div>
           </div>
 
-          {/* Time & Duration */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                Start Time
-              </label>
-              <input
-                type="time"
-                value={startTime}
-                onChange={e => setStartTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-border text-slate-800 dark:text-slate-200 text-sm outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                End Time
-              </label>
-              <input
-                type="time"
-                value={endTime}
-                onChange={e => setEndTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-border text-slate-800 dark:text-slate-200 text-sm outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                Duration (min)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="5"
-                placeholder="e.g. 30"
-                value={durationMinutes || ''}
-                onChange={e => setDurationMinutes(e.target.value ? parseInt(e.target.value, 10) : null)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-border text-slate-800 dark:text-slate-200 text-sm outline-none"
-              />
-            </div>
-          </div>
+          {/* Time & Duration Selector */}
+          <TimePickerField
+            label="Scheduled Time & Duration"
+            value={startTime}
+            onChange={timeStr => setStartTime(timeStr)}
+            onClear={() => {
+              setStartTime('');
+              setEndTime('');
+            }}
+            durationMinutes={durationMinutes}
+            onDurationChange={mins => setDurationMinutes(mins)}
+            showDuration={true}
+          />
 
           {/* Recurrence Rule Engine */}
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200/80 dark:border-surface-dark-border space-y-4">

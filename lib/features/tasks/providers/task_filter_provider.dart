@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:daypulse/core/utilities/date_utils.dart';
 import 'package:daypulse/features/tasks/models/task_filter.dart';
 import 'package:daypulse/features/tasks/models/task_model.dart';
 import 'package:daypulse/features/tasks/models/task_sort.dart';
@@ -19,20 +20,74 @@ final filteredTasksProvider = Provider<List<TaskModel>>((ref) {
 
   return tasksAsync.when(
     data: (tasks) {
-      List<TaskModel> result = List.from(tasks);
+      final tasksNotifier = ref.watch(tasksNotifierProvider.notifier);
+      final occurrences = tasksNotifier.occurrences;
+      final todayIso = AppDateUtils.toIsoDate(DateTime.now());
+      final targetDateIso = filter.date ?? todayIso;
 
-      // 1. Status Filter
+      final occOnTarget = occurrences.where((o) => o.date == targetDateIso).toList();
+      final occMap = {for (final o in occOnTarget) o.taskId: o};
+
+      List<TaskModel> result = [];
+
+      // 1. Status Filter with occurrence synthesis
       switch (filter.status) {
         case TaskStatusFilter.all:
+          result = tasks.map((t) {
+            if (t.isRecurring) {
+              final occ = occMap[t.id];
+              return t.copyWith(
+                date: targetDateIso,
+                completed: occ != null ? occ.completed : false,
+                completedAt: occ?.completedAt,
+              );
+            }
+            return t;
+          }).toList();
           break;
+
         case TaskStatusFilter.active:
-          result = result.where((t) => !t.completed).toList();
+          result = tasks.where((t) {
+            if (t.isRecurring) {
+              final occ = occMap[t.id];
+              return occ == null || !occ.completed;
+            }
+            return !t.completed;
+          }).map((t) {
+            if (t.isRecurring) {
+              return t.copyWith(date: targetDateIso, completed: false);
+            }
+            return t;
+          }).toList();
           break;
+
         case TaskStatusFilter.completed:
-          result = result.where((t) => t.completed).toList();
+          final List<TaskModel> completedList = [];
+          // A. Non-recurring completed tasks
+          for (final t in tasks) {
+            if (!t.isRecurring && t.completed) {
+              completedList.add(t);
+            }
+          }
+          // B. Recurring tasks completed occurrences
+          final recurringMap = {for (final t in tasks.where((t) => t.isRecurring)) t.id: t};
+          for (final occ in occurrences) {
+            if (occ.completed && !occ.isSkipped) {
+              final parent = recurringMap[occ.taskId];
+              if (parent != null) {
+                completedList.add(parent.copyWith(
+                  date: occ.date,
+                  completed: true,
+                  completedAt: occ.completedAt,
+                ));
+              }
+            }
+          }
+          result = completedList;
           break;
+
         case TaskStatusFilter.overdue:
-          result = result.where((t) => t.isOverdue).toList();
+          result = tasks.where((t) => !t.isRecurring && t.isOverdue).toList();
           break;
       }
 

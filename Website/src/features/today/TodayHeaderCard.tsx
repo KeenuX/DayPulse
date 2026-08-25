@@ -12,14 +12,13 @@ interface TodayHeaderCardProps {
 export const TodayHeaderCard: React.FC<TodayHeaderCardProps> = ({
   onOpenDailySummary,
 }) => {
-  const { tasks, occurrences } = useDayPulseData();
+  const { tasks, occurrences, getTasksForDate } = useDayPulseData();
 
   const now = new Date();
-  const todayStr = AppDateUtils.toIsoDate(now);
   const todayFormatted = AppDateUtils.formatDisplayDate(now);
 
-  // Get all top-level tasks scheduled for today
-  const todayTasks = tasks.filter(t => t.date === todayStr && !t.parentId);
+  // Get all top-level tasks scheduled for today (including synthesized recurring tasks with their today completion status)
+  const todayTasks = getTasksForDate(now);
   const totalTasks = todayTasks.length;
   const completedTasks = todayTasks.filter(t => t.completed).length;
   const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;

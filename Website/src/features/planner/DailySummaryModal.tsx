@@ -16,12 +16,12 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({
   onClose,
   onNavigateToPlanner,
 }) => {
-  const { tasks, occurrences, rescheduleTask } = useDayPulseData();
+  const { tasks, occurrences, rescheduleTask, getTasksForDate } = useDayPulseData();
 
   if (!isOpen) return null;
 
-  const todayStr = AppDateUtils.toIsoDate(new Date());
-  const todayTasks = tasks.filter(t => t.date === todayStr && !t.parentId);
+  const now = new Date();
+  const todayTasks = getTasksForDate(now);
   const streakData = ProductivityCalculator.calculateStreaks(tasks, occurrences);
   const scoreData = ProductivityCalculator.calculateScore(todayTasks, streakData.currentStreak);
 

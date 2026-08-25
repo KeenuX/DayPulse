@@ -3,6 +3,7 @@ import { X, Calendar as CalendarIcon, Clock, ArrowRight } from 'lucide-react';
 import { addDays, nextMonday } from 'date-fns';
 import { useDayPulseData } from '../../core/db/useDayPulseData';
 import { AppDateUtils } from '../../core/utilities/dateUtils';
+import { TimePickerField } from './TimePickerField';
 
 interface RescheduleModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
   const task = tasks.find(t => t.id === taskId);
 
   const [customDate, setCustomDate] = useState(AppDateUtils.toIsoDate(new Date()));
-  const [customTime, setCustomTime] = useState('');
+  const [customTime, setCustomTime] = useState(task?.startTime || '');
 
   if (!isOpen || !task) return null;
 
@@ -50,7 +51,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 max-h-[85vh] overflow-y-auto">
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-100 dark:border-surface-dark-border">
             <span className="text-xs text-slate-400">Current schedule:</span>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{task.title}</p>
@@ -108,35 +109,32 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
             </div>
           </div>
 
-          {/* Custom Date Picker */}
+          {/* Custom Date & Enhanced Time Picker */}
           <div className="pt-2 border-t border-slate-100 dark:border-surface-dark-border space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pick Specific Date & Time</span>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Date</label>
-                <input
-                  type="date"
-                  value={customDate}
-                  onChange={e => setCustomDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-border text-xs text-slate-800 dark:text-slate-200 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Time (Optional)</label>
-                <input
-                  type="time"
-                  value={customTime}
-                  onChange={e => setCustomTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-border text-xs text-slate-800 dark:text-slate-200 outline-none"
-                />
-              </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Custom Date & Time</span>
+            <div>
+              <label className="block text-[11px] text-slate-400 mb-1">Target Date</label>
+              <input
+                type="date"
+                value={customDate}
+                onChange={e => setCustomDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-surface-dark-subtle border border-slate-200 dark:border-surface-dark-border text-xs text-slate-800 dark:text-slate-200 outline-none"
+              />
             </div>
+
+            <TimePickerField
+              label="Target Time (Optional)"
+              value={customTime}
+              onChange={timeStr => setCustomTime(timeStr)}
+              onClear={() => setCustomTime('')}
+              showDuration={false}
+            />
 
             <button
               onClick={() => handleApply(customDate, customTime)}
-              className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20 active:scale-95 transition-all"
+              className="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20 active:scale-95 transition-all mt-2"
             >
-              Apply Custom Date
+              Apply Reschedule
             </button>
           </div>
         </div>
