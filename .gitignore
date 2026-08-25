@@ -57,3 +57,11 @@ migrate_working_dir/
 app.*.symbols
 app.*.map.json
 .widget_preview/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

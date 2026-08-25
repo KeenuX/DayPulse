@@ -1,0 +1,27 @@
+{
+  "name": "xyz",
+  "version": "1.0.0",
+  "description": "[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev) [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev) [![State Management](https://img.shields.io/badge/Riverpod-2.x-8A2BE2?style=for-the-badge)](https://riverpod.dev) [![Database](https://img.shields.io/badge/SQLite-Sqflite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://pub.dev/packages/sqflite) [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeenuX/DayPulse.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/KeenuX/DayPulse/issues"
+  },
+  "homepage": "https://github.com/KeenuX/DayPulse#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.3.0"
+  }
+}
