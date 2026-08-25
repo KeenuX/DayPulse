@@ -8,8 +8,8 @@ import 'package:daypulse/features/progress/presentation/widgets/annual_heatmap_c
 import 'package:daypulse/features/progress/presentation/widgets/completed_tasks_donut_card.dart';
 import 'package:daypulse/features/progress/presentation/widgets/daily_completed_card.dart';
 import 'package:daypulse/features/progress/presentation/widgets/focus_metrics_card.dart';
+import 'package:daypulse/features/progress/presentation/widgets/next_7_days_task_item.dart';
 import 'package:daypulse/features/tasks/models/task_model.dart';
-import 'package:daypulse/features/tasks/presentation/widgets/task_card.dart';
 import 'package:daypulse/features/tasks/providers/tasks_provider.dart';
 
 class ProgressScreen extends ConsumerWidget {
@@ -300,9 +300,13 @@ class ProgressScreen extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: next7DaysTasks.length,
-                      separatorBuilder: (ctx, i) => const SizedBox(height: 8),
+                      separatorBuilder: (ctx, i) => const SizedBox(height: 6),
                       itemBuilder: (ctx, index) {
-                        return TaskCard(task: next7DaysTasks[index], showDate: true);
+                        final task = next7DaysTasks[index];
+                        return Next7DaysTaskItem(
+                          key: ValueKey('next7_${task.id}_${task.date}'),
+                          task: task,
+                        );
                       },
                     ),
                 ],
