@@ -72,7 +72,8 @@ class TasksNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
     try {
       final tasks = await _repository.getAllTasks();
       _occurrences = await _repository.getAllOccurrences();
-      state = AsyncValue.data(tasks);
+      // Ensure a fresh List instance is passed to trigger Riverpod state change notification
+      state = AsyncValue.data(List<TaskModel>.from(tasks));
 
       // Re-sync future notifications
       for (final t in tasks) {
@@ -269,7 +270,7 @@ class TasksNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
     try {
       final currentTasks = state.value ?? [];
       final task = currentTasks.firstWhere((t) => t.id == id, orElse: () => throw Exception('Task not found'));
-      final targetDate = occurrenceDate ?? task.date;
+      final targetDate = occurrenceDate ?? (task.isRecurring ? AppDateUtils.toIsoDate(DateTime.now()) : task.date);
 
       if (task.isRecurring) {
         await _repository.setOccurrenceCompletion(id, targetDate, completed);

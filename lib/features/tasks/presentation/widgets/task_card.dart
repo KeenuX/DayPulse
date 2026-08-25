@@ -128,6 +128,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
           await ref.read(tasksNotifierProvider.notifier).toggleTaskCompletion(
                 widget.task.id,
                 !isCompleted,
+                occurrenceDate: widget.task.date,
               );
           return false;
         }

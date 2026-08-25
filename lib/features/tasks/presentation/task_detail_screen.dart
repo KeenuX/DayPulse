@@ -7,6 +7,7 @@ import 'package:daypulse/core/theme/app_colors.dart';
 import 'package:daypulse/core/utilities/date_utils.dart';
 import 'package:daypulse/core/utilities/duration_formatter.dart';
 import 'package:daypulse/features/categories/providers/categories_provider.dart';
+import 'package:daypulse/features/tasks/models/task_model.dart';
 import 'package:daypulse/features/tasks/presentation/widgets/reschedule_modal.dart';
 import 'package:daypulse/features/tasks/providers/tasks_provider.dart';
 
@@ -65,7 +66,22 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       );
     }
 
-    final category = ref.watch(categoryByIdProvider(task.categoryId));
+    final tasksNotifier = ref.watch(tasksNotifierProvider.notifier);
+    final occurrences = tasksNotifier.occurrences;
+    final todayIso = AppDateUtils.toIsoDate(DateTime.now());
+
+    // Synthesize display state for recurring task
+    TaskModel displayTask = task;
+    if (task.isRecurring) {
+      final occ = occurrences.where((o) => o.taskId == task.id && o.date == todayIso).firstOrNull;
+      displayTask = task.copyWith(
+        date: todayIso,
+        completed: occ != null ? occ.completed : false,
+        completedAt: occ?.completedAt,
+      );
+    }
+
+    final category = ref.watch(categoryByIdProvider(displayTask.categoryId));
     final completedSubtasksCount = subtasks.where((s) => s.completed).length;
     final totalSubtasksCount = subtasks.length;
     final subtaskProgress = totalSubtasksCount > 0 ? (completedSubtasksCount / totalSubtasksCount) : 0.0;
@@ -78,14 +94,14 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Edit',
             onPressed: () {
-              context.push('${AppRoutes.editTask}/${task.id}');
+              context.push('${AppRoutes.editTask}/${displayTask.id}');
             },
           ),
           IconButton(
             icon: const Icon(Icons.calendar_month_outlined),
             tooltip: 'Reschedule',
             onPressed: () {
-              RescheduleModal.show(context, task: task);
+              RescheduleModal.show(context, task: displayTask);
             },
           ),
           IconButton(
@@ -98,8 +114,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   title: const Text('Delete Task?'),
                   content: Text(
                     subtasks.isNotEmpty
-                        ? 'Are you sure you want to delete "${task.title}" and its ${subtasks.length} subtasks?'
-                        : 'Are you sure you want to delete "${task.title}"?',
+                        ? 'Are you sure you want to delete "${displayTask.title}" and its ${subtasks.length} subtasks?'
+                        : 'Are you sure you want to delete "${displayTask.title}"?',
                   ),
                   actions: [
                     TextButton(
@@ -112,7 +128,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        await ref.read(tasksNotifierProvider.notifier).deleteTask(task.id);
+                        await ref.read(tasksNotifierProvider.notifier).deleteTask(displayTask.id);
                         if (ctx.mounted) Navigator.of(ctx).pop();
                         if (context.mounted) context.pop();
                       },
@@ -133,15 +149,19 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         ),
         child: ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: task.completed ? AppColors.info : AppColors.success,
+            backgroundColor: displayTask.completed ? AppColors.info : AppColors.success,
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           onPressed: () async {
-            await ref.read(tasksNotifierProvider.notifier).toggleTaskCompletion(task.id, !task.completed);
+            await ref.read(tasksNotifierProvider.notifier).toggleTaskCompletion(
+                  displayTask.id,
+                  !displayTask.completed,
+                  occurrenceDate: displayTask.date,
+                );
           },
-          icon: Icon(task.completed ? Icons.replay_rounded : Icons.check_circle_rounded),
+          icon: Icon(displayTask.completed ? Icons.replay_rounded : Icons.check_circle_rounded),
           label: Text(
-            task.completed ? 'Mark as Incomplete' : 'Mark as Completed',
+            displayTask.completed ? 'Mark as Incomplete' : 'Mark as Completed',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
@@ -150,7 +170,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
           // Completion Status Banner
-          if (task.completed)
+          if (displayTask.completed)
             Container(
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
