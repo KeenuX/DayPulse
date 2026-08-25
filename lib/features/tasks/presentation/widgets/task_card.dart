@@ -141,10 +141,8 @@ class _TaskCardState extends ConsumerState<TaskCard> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isOverdue
-                  ? AppColors.error.withValues(alpha: 0.5)
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              width: isOverdue ? 1.5 : 1,
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              width: 1,
             ),
           ),
           child: ClipRRect(
@@ -582,31 +580,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                                                 color: isDark ? Colors.cyan[400] : Colors.cyan[700],
                                               ),
 
-                                            // Overdue indicator
-                                            if (isOverdue)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.error.withValues(alpha: 0.15),
-                                                  borderRadius: BorderRadius.circular(6),
-                                                ),
-                                                child: const Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(Icons.warning_amber_rounded, size: 11, color: AppColors.error),
-                                                    SizedBox(width: 3),
-                                                    Text(
-                                                      'Overdue',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: AppColors.error,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                          ],
+                                           ],
                                         ),
                                       ],
                                     ),

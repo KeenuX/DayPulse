@@ -7,7 +7,6 @@ import 'package:daypulse/features/tasks/presentation/widgets/quick_add_sheet.dar
 import 'package:daypulse/features/tasks/providers/tasks_provider.dart';
 import 'package:daypulse/features/today/models/time_block.dart';
 import 'package:daypulse/features/today/providers/today_controller.dart';
-import 'package:daypulse/features/today/presentation/widgets/overdue_banner.dart';
 import 'package:daypulse/features/today/presentation/widgets/time_slot_section.dart';
 import 'package:daypulse/features/today/presentation/widgets/today_header_card.dart';
 
@@ -68,10 +67,7 @@ class TodayScreen extends ConsumerWidget {
                 const TodayHeaderCard(),
                 const SizedBox(height: 16),
 
-                // 2. Overdue Tasks Banner (if any exist)
-                const OverdueBanner(),
-
-                // 3. Time Bucket Task Sections
+                // 2. Time Bucket Task Sections
                 if (todayTasks.isNotEmpty) ...[
                   // Morning Section
                   TimeSlotSection(

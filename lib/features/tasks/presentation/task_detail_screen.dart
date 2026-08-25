@@ -181,42 +181,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   ),
                 ],
               ),
-            )
-          else if (task.isOverdue)
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 22),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Overdue Task',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.error),
-                        ),
-                        Text(
-                          'Scheduled time has passed without completion.',
-                          style: TextStyle(fontSize: 12, color: AppColors.error),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => ref.read(tasksNotifierProvider.notifier).moveOverdueTaskToToday(task.id),
-                    child: const Text('Move to Today', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
             ),
+
 
           // Title
           Text(
