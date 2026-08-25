@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://daypulse.antideploy.com/sitemap.xml
