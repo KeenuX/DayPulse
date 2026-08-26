@@ -11,7 +11,45 @@ Live on-> https://daypulse.antideploy.com/
 
 **DayPulse** is a feature-rich, privacy-focused personal productivity suite available for **Mobile (Flutter)** and **Web (React 19 + TypeScript + Vite)**. It combines task management, zero-bloat recurring task synthesis, 53-week annual contribution heatmap analytics, high-priority notifications, and custom category workflows into a unified, seamless experience.
 
-🌐 **Web Version**: [https://daypulse.antideploy.com](https://daypulse.antideploy.com) ([Website Documentation](Website/README.md))
+🌐 **Live Web App**: [https://daypulse.antideploy.com](https://daypulse.antideploy.com) · [Website Documentation](Website/README.md)
+
+---
+
+## 📸 Visual Showcase & Web Screenshots
+
+### 1. Today Command Center (OLED Dark & Crisp Light Theme)
+> Real-time progress pulse ring, Natural Language quick-add bar, and time-block slotting (*Morning, Afternoon, Evening*).
+
+| Dark Theme (OLED) | Light Theme |
+| :---: | :---: |
+| ![Today Dashboard Dark](Website/screenshots/01_today_dashboard.png) | ![Today Dashboard Light](Website/screenshots/06_light_theme.png) |
+
+---
+
+### 2. "Me" Productivity Hub & 53-Week Annual Contribution Heatmap
+> 53-week Sunday-aligned activity matrix, Category Donut chart, Weekly Focus time analytics, and compact expandable upcoming tasks.
+
+<div align="center">
+  <img src="Website/screenshots/04_me_analytics.png" alt="Me Screen & Annual Heatmap Analytics" width="92%" />
+</div>
+
+---
+
+### 3. 7-Column Calendar Matrix & Task Management
+> Seamless navigation between Month, Week, and Day views with category indicators and quick filtering.
+
+| 7-Column Calendar Month Matrix | Filtered Task Hub |
+| :---: | :---: |
+| ![Calendar Month Grid](Website/screenshots/02_calendar_view.png) | ![Task Management](Website/screenshots/03_tasks_page.png) |
+
+---
+
+### 4. Evening Review (Plan Tomorrow) & Mobile PWA Responsive View
+> Wrap up daily accomplishments, clear backlogs, and set top 3 priorities for tomorrow on desktop and mobile.
+
+| Evening Review & Tomorrow Planner | Mobile PWA Responsive View |
+| :---: | :---: |
+| ![Plan Tomorrow Planner](Website/screenshots/05_planner_page.png) | <img src="Website/screenshots/07_mobile_responsive.png" alt="Mobile Responsive Experience" width="340px" /> |
 
 ---
 
