@@ -2,13 +2,16 @@ Live on-> https://daypulse.antideploy.com/
 
 # 🌟 DayPulse — Modern Daily Planner & Habit Tracker
 
+[![Live Web App](https://img.shields.io/badge/Live%20Web%20App-daypulse.antideploy.com-6366F1?style=for-the-badge&logo=googlechrome&logoColor=white)](https://daypulse.antideploy.com)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![State Management](https://img.shields.io/badge/Riverpod-2.x-8A2BE2?style=for-the-badge)](https://riverpod.dev)
 [![Database](https://img.shields.io/badge/SQLite-Sqflite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://pub.dev/packages/sqflite)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-**DayPulse** is a feature-rich, privacy-focused personal productivity suite built with Flutter. It combines task management, zero-bloat recurring task synthesis, 53-week annual contribution heatmap analytics, high-priority notifications, and custom category workflows into a unified mobile experience.
+**DayPulse** is a feature-rich, privacy-focused personal productivity suite available for **Mobile (Flutter)** and **Web (React 19 + TypeScript + Vite)**. It combines task management, zero-bloat recurring task synthesis, 53-week annual contribution heatmap analytics, high-priority notifications, and custom category workflows into a unified, seamless experience.
+
+🌐 **Web Version**: [https://daypulse.antideploy.com](https://daypulse.antideploy.com) ([Website Documentation](Website/README.md))
 
 ---
 
